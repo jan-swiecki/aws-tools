@@ -16,10 +16,14 @@ uninstall () {
   uninstall aws-regions
   uninstall aws-ec2-list
   uninstall aws-nuke-bucket
+  uninstall aws-nuke-rds
+  uninstall aws-manage-users
   echo "done"
 } || {
   install aws-regions
   install aws-ec2-list
   install aws-nuke-bucket
+  install aws-nuke-rds
+  install aws-manage-users
   echo "done"
 }
