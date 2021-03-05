@@ -1,0 +1,63 @@
+#!/bin/bash
+
+venv_create_wrapper () {
+  target="$HOME/.local/bin/python-venv-${1}"
+  cat <<EOF > "$target"
+#!/bin/bash -i
+set -eou pipefail
+
+. venv-exec load "$1"
+
+python "\$@"
+EOF
+  chmod +x "$target"
+}
+
+if [ -z "${1:-}" ]; then
+  cat <<EOF
+usage:
+  venv create <name>   create virtualenv named <name>
+  venv create2 <name>  create virtualenv named <name> for python2
+  venv load [name]     load virtualenv [name] (default: load from .venv file)
+  venv delete <name>   delete virtualenv named <name>
+  venv (ls | list)     list available virtualenvs
+EOF
+  exit
+fi
+
+if [ "$1" == "create" ]; then
+  virtualenv -p /usr/bin/python3.9 "$HOME/.local/var/venv/$2"
+  venv_create_wrapper "$2"
+elif [ "$1" == "create-if-not-exists" ]; then
+  if [ ! -d "$HOME/.local/var/venv/$2" ]; then
+    virtualenv -p /usr/bin/python3.9 "$HOME/.local/var/venv/$2"
+    venv_create_wrapper "$2"
+  fi
+elif [ "$1" == "create2" ]; then
+  virtualenv -p /usr/bin/python2 "$HOME/.local/var/venv/$2"
+  venv_create_wrapper "$2"
+elif [ "$1" == "load" ]; then
+  if [ "$2" == "." -o -z "$2" ]; then
+    if [ ! -f ".venv" ]; then
+      echo "no such file .venv"
+    else
+      source "$HOME/.local/var/venv/$(cat .venv)/bin/activate"
+    fi
+  else
+    source "$HOME/.local/var/venv/${2:-default}/bin/activate"
+  fi
+elif [ "$1" == "delete" ]; then
+  safe-rm -rf "$HOME/.local/var/venv/$2"
+  safe-rm "$HOME/.local/bin/python-venv-${2}" >/dev/null 2>&1 || true
+elif [ "$1" == "ls" -o "$1" == "list" ]; then
+  shift
+  ls -1 ~/.local/var/venv
+# elif [ "$1" == "install" ]; then
+#   mkdir -p ~/.local/bin
+#   mkdir -p ~/.local/var/venv
+# elif [ "$1" == "uninstall" ]; then
+#   safe-rm -rf ~/.local/var/venv
+else
+  echo "error: no such command: $1" >&2
+  exit 1
+fi

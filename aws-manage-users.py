@@ -20,6 +20,16 @@ force = args.f
 quiet = args.q
 list = args.l
 
+xs = args.username.split('/') if args.username else None
+
+if xs is not None:
+  if len(xs) == 1:
+    username = xs[0]
+    username_path = None
+  else:
+    username_path = xs[0]
+    username = xs[1]
+
 iam = boto3.client('iam')
 
 def delete_access_keys():
@@ -29,6 +39,20 @@ def delete_access_keys():
     iam.delete_access_key(
       UserName=args.username,
       AccessKeyId=key['AccessKeyId']
+    )
+
+def delete_mfa_devices():
+  mfas = iam.list_mfa_devices(UserName = args.username)['MFADevices']
+  for mfa in mfas:
+    log(f"deleting MFA device {mfa['SerialNumber']}")
+
+    iam.deactivate_mfa_device(
+        UserName=args.username,
+        SerialNumber=mfa['SerialNumber']
+    )
+
+    iam.delete_virtual_mfa_device(
+      SerialNumber=mfa['SerialNumber']
     )
 
 def log(*args, **kwargs):
@@ -53,9 +77,12 @@ def get_user():
 
 def get_user_or_none():
   try:
-    return iam.get_user(
-      UserName=args.username
-    )
+    # return iam.get_user(
+    #   UserName=args.username
+    # )
+    xs = iam.list_users(PathPrefix=f"/tf/{args.username}")['Users']
+    assert len(xs) < 2
+    return xs[0] if len(xs) == 1 else None
   except Exception as err:
     if type(err).__name__ == 'NoSuchEntityException':
       return None
@@ -63,7 +90,7 @@ def get_user_or_none():
       raise err
 
 if list:
-  for user in iam.list_users(PathPrefix='/aws-manager-users/')['Users']:
+  for user in iam.list_users(PathPrefix='/tf/')['Users']:
     print(f"{user['UserName']} {user['Arn']}")
 elif args.action is None:
   user = get_user()
@@ -76,7 +103,7 @@ elif args.action == 'create':
     exit()
 
   iam.create_user(
-    Path='/aws-manager-users/',
+    Path='/tf/',
     UserName=args.username
   )
 
@@ -131,6 +158,7 @@ elif args.action == 'delete':
   user = get_user()
 
   delete_access_keys()
+  delete_mfa_devices()
   log(f"deleting user {args.username}")
   iam.delete_user(
     UserName=args.username

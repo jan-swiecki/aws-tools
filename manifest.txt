@@ -1,0 +1,6 @@
+aws-regions
+aws-ec2-list
+aws-nuke-bucket
+aws-nuke-rds
+aws-manage-users
+awsenv
