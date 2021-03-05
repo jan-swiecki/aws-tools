@@ -19,7 +19,7 @@ uninstall "venv-exec"
 read -p "remove venv from ~/.bashrc? (y?)" q && [ "$q" == "y" ] && (
   cp -f ~/.bashrc ~/.bashrc.bak
   echo "created ~/.bashrc.bak"
-  sed -i '/venv () { . venv-exec "$@"; }/d' ~/.bashrc
+  sed -i "/$(cat venv-bashrc)/d" ~/.bashrc
   echo "removed venv to ~/.bashrc"
 )
 

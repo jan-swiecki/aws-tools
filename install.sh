@@ -1,8 +1,9 @@
 #!/bin/bash -i
+set -eo pipefail
 
-venv-exec create-if-not-exists aws
+./venv-exec create-if-not-exists aws
 
-. venv-exec load aws
+. ./venv-exec load aws
 
 prefix="$HOME/.local/bin/"
 
@@ -11,8 +12,8 @@ install () {
   cat << EOF > "$prefix/$1"
 #!/bin/bash
 
-venv load aws
-python "$PWD/$1.py" "$@"
+. venv-exec load aws
+python "$PWD/$1.py" "\$@"
 EOF
   chmod +x "$prefix/$1"
   echo "$1 installed"
@@ -29,10 +30,12 @@ ln -sf "$PWD/venv-exec" "$prefix/venv-exec"
 read -p "add venv to ~/.bashrc? (y?)" q && [ "$q" == "y" ] && (
   cp -f ~/.bashrc ~/.bashrc.bak
   echo "created ~/.bashrc.bak"
-  sed -i '/venv () { . venv-exec "$@"; }/d' ~/.bashrc
-  echo 'venv () { . venv-exec "$@"; }' >> ~/.bashrc
+  sed -i "/$(cat venv-bashrc)/d" ~/.bashrc
+  echo >> ~/.bashrc
+  cat venv-bashrc >> ~/.bashrc
   echo "added venv to ~/.bashrc"
 )
 
-pip install pyyaml
+pip install poetry
+poetry install
 echo "done"

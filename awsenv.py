@@ -44,6 +44,7 @@ def aws_vault_exec(alias):
   # os.system("aws-vault add")
   # os.putenv('AWS_VAULT_BACKEND', 'pass')
   # --pass-dir ~/.aws/.password-store
+  os.system(f"venv load aws")
   os.system(f"aws-vault exec '{alias}'")
 
 def add_context(alias, aws_account_id):
