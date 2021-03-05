@@ -10,7 +10,7 @@ prefix="$HOME/.local/bin/"
 install () {
   # ln -sf "$PWD/$1.py" "$prefix/$1"
   cat << EOF > "$prefix/$1"
-#!/bin/bash
+#!/bin/bash -i
 
 . venv-exec load aws
 python "$PWD/$1.py" "\$@"
@@ -26,6 +26,7 @@ for l in $list; do
 done
 
 ln -sf "$PWD/venv-exec" "$prefix/venv-exec"
+ln -sf "$PWD/awsenv-vault-exec.sh" "$prefix/awsenv-vault-exec"
 
 read -p "add venv to ~/.bashrc? (y?)" q && [ "$q" == "y" ] && (
   cp -f ~/.bashrc ~/.bashrc.bak

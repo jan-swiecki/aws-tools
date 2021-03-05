@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -i
 
 venv_create_wrapper () {
   target="$HOME/.local/bin/python-venv-${1}"
@@ -22,6 +22,7 @@ usage:
   venv delete <name>   delete virtualenv named <name>
   venv (ls | list)     list available virtualenvs
 EOF
+  exit 1
 elif [ "$1" == "create" ]; then
   virtualenv -p /usr/bin/python3.9 "$HOME/.local/var/venv/$2"
   venv_create_wrapper "$2"
@@ -34,14 +35,21 @@ elif [ "$1" == "create2" ]; then
   virtualenv -p /usr/bin/python2 "$HOME/.local/var/venv/$2"
   venv_create_wrapper "$2"
 elif [ "$1" == "load" ]; then
-  if [ "$2" == "." -o -z "$2" ]; then
+  if [ "$VENV_LOADED" != "" -a "$VENV_LOADED" != "$2" ]; then
+    echo "error: venv already loaded as $VENV_LOADED" >&2
+  elif [ "$VENV_LOADED" != "" -a "$VENV_LOADED" == "$2" ]; then
+    true
+    # echo "not loading (venv already loaded)" >&2
+  elif [ "$2" == "." -o -z "$2" ]; then
     if [ ! -f ".venv" ]; then
       echo "no such file .venv"
     else
       source "$HOME/.local/var/venv/$(cat .venv)/bin/activate"
+      export VENV_LOADED="$(cat .venv)"
     fi
   else
     source "$HOME/.local/var/venv/${2:-default}/bin/activate"
+    export VENV_LOADED="${2:-default}"
   fi
 elif [ "$1" == "delete" ]; then
   safe-rm -rf "$HOME/.local/var/venv/$2"
@@ -56,4 +64,5 @@ elif [ "$1" == "ls" -o "$1" == "list" ]; then
 #   safe-rm -rf ~/.local/var/venv
 else
   echo "error: no such command: $1" >&2
+  exit 1
 fi

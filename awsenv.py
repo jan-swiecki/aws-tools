@@ -44,8 +44,12 @@ def aws_vault_exec(alias):
   # os.system("aws-vault add")
   # os.putenv('AWS_VAULT_BACKEND', 'pass')
   # --pass-dir ~/.aws/.password-store
-  os.system(f"venv load aws")
-  os.system(f"aws-vault exec '{alias}'")
+  ctx = get_context(alias)
+  if ctx == None:
+    print(f"error: no such context: {alias}")
+    exit()
+
+  os.system(f"_PS1=\"$PS1\" awsenv-vault-exec {alias}")
 
 def add_context(alias, aws_account_id):
   Path(AWSENV_YAML_PATH).touch()
@@ -70,11 +74,7 @@ def add_context(alias, aws_account_id):
 def delete_context(alias):
   Path(AWSENV_YAML_PATH).touch()
   with open(AWSENV_YAML_PATH, 'r') as stream:
-    y = yaml.safe_load(stream)
-    if y == None:
-      y = {}
-    if 'contexts' not in y:
-      y['contexts'] = {}
+    y = get_yaml()
     if alias in y['contexts']:
       aws_account_id = y['contexts'][alias]['aws_account_id']
       del y['contexts'][alias]
@@ -89,6 +89,18 @@ def list_contexts():
   Path(AWSENV_YAML_PATH).touch()
   with open(AWSENV_YAML_PATH, 'r') as stream:
     print(stream.read())
+
+def get_yaml():
+  Path(AWSENV_YAML_PATH).touch()
+  with open(AWSENV_YAML_PATH, 'r') as stream:
+    y = yaml.safe_load(stream.read())
+    if 'contexts' not in y:
+      y['contexts'] = {}
+    return y
+
+def get_context(alias):
+  y = get_yaml()
+  return y['contexts'][alias] if alias in y['contexts'] else None
 
 def delete_config():
   os.remove(AWSENV_YAML_PATH)

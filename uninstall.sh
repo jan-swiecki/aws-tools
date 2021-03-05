@@ -15,6 +15,7 @@ for l in $list; do
   uninstall "$l"
 done
 uninstall "venv-exec"
+uninstall "awsenv-vault-exec"
 
 read -p "remove venv from ~/.bashrc? (y?)" q && [ "$q" == "y" ] && (
   cp -f ~/.bashrc ~/.bashrc.bak
