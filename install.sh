@@ -1,4 +1,4 @@
-#!/bin/bash -i
+#!/bin/bash
 set -eo pipefail
 
 ./venv-exec create-if-not-exists aws
@@ -27,6 +27,7 @@ done
 
 ln -sf "$PWD/venv-exec" "$prefix/venv-exec"
 ln -sf "$PWD/awsenv-vault-exec.sh" "$prefix/awsenv-vault-exec"
+ln -sf "$PWD/aws-s3-pipe-upload.sh" "$prefix/aws-s3-pipe-upload"
 
 read -p "add venv to ~/.bashrc? (y?)" q && [ "$q" == "y" ] && (
   cp -f ~/.bashrc ~/.bashrc.bak

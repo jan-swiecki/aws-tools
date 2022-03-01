@@ -1,4 +1,4 @@
-#!/bin/bash -i
+#!/bin/bash
 
 venv_create_wrapper () {
   target="$HOME/.local/bin/python-venv-${1}"
@@ -24,11 +24,11 @@ usage:
 EOF
   exit 1
 elif [ "$1" == "create" ]; then
-  virtualenv -p /usr/bin/python3.9 "$HOME/.local/var/venv/$2"
+  virtualenv -p /usr/bin/python3.8 "$HOME/.local/var/venv/$2"
   venv_create_wrapper "$2"
 elif [ "$1" == "create-if-not-exists" ]; then
   if [ ! -d "$HOME/.local/var/venv/$2" ]; then
-    virtualenv -p /usr/bin/python3.9 "$HOME/.local/var/venv/$2"
+    virtualenv -p /usr/bin/python3.8 "$HOME/.local/var/venv/$2"
     venv_create_wrapper "$2"
   fi
 elif [ "$1" == "create2" ]; then
